@@ -3,39 +3,35 @@
 <head>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
 	<link rel="stylesheet" href="http://cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.css" />
-	<link rel="stylesheet" href="css/jquery.ui.timepicker.min.css" />
 	<link rel="stylesheet" href="css/normalize.min.css" />
 	<link rel="stylesheet" href="css/default.css" />
 	
 	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
 	<script src="http://cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.js"></script>
-	<script src="js/jquery.ui.timepicker.min.js"></script>
 	<script src="js/default.js"></script>
 </head>
 <body>
-	<p>
-		<label for="term">Term:</label>
-		&nbsp;
-		<select id="term">
-			<option name="spring2013">Spring 2013</option>
-		</select>
-	<p>
-		<label for="courseids" size="50">Course IDs:</label>
-		&nbsp;
-		<input id="courseids" />
-	</p>
+	<table id="cmd">
+		<tbody>
+			<td id="cell1"><input type="submit" id="submit" value="$ ./schgen" /></td>
+			<td id="cell2"><label for="term">--term</label></td>
+			<td id="cell3"><select id="term"><option name="spring2013">Spring 2013</option></select></td>
+			<td id="cell4"><label for="courseids" size="50">--course-ids</label></td>
+			<td id="cell5"><input type="text" id="courseids" placeholder="MATH1202, ENGLC1010" /></td>
+		</tbody>
+	</table>
 	
-	<div id="slider"></div>
-	<div id="calendar"></div>
+	<p>Click and drag on the calendar to specify times during which classes should not be scheduled.</p>
+	
 	<ul id="courses-list"></ul>
+	<div id="calendar"></div>
+	<div id="slider"></div>
 	
 	<div id="no-permutations-modal" title="No Schedules Possible">
 		<div id="slider"></div>
 		<div id="calendar"></div>
 		<p>No schedules are possible with the current configuration. Try clicking on unavailable time slots to remove them.</p>
 	</div>
-	
-	<p><input type="submit" id="submit" value="$ ./schgen" /></p>
 </body>
 </html>

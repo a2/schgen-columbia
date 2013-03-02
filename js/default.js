@@ -174,6 +174,7 @@ function array_pairs(arr, allowsDuplicates) {
 				courseids = $('#courseids').val().split(', '),
 				jxhr = [],
 				result = [];
+			if (!courseids.length || (courseids.length == 1 || courseids[0] == "")) return;
 			$.each(courseids, function(i, val) {
 				if (!val || !val.length)
 					return;
@@ -225,8 +226,8 @@ function array_pairs(arr, allowsDuplicates) {
 									start: new Date(2013, 2, 3+columbiaDays.indexOf(day), startTimeHours, startTimeMinutes),
 									end: new Date(2013, 2, 3+columbiaDays.indexOf(day), endTimeHours, endTimeMinutes),
 									url: url,
-									title: [section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')'].join(''),
-									backgroundColor: 'blue',
+									title: [section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ')'].join(''),
+									backgroundColor: '#405E74',
 									editable: false
 								});
 							});
@@ -267,7 +268,8 @@ function array_pairs(arr, allowsDuplicates) {
 			editable: true,
 			selectable: true,
 			selectHelper: true,
-			eventBackgroundColor: 'red',
+			eventBackgroundColor: '#7F2425',
+			eventBorderColor: 'black',
 			select: function(start, end, allDay) {
 				calendar.fullCalendar('renderEvent',
 					{
@@ -288,52 +290,56 @@ function array_pairs(arr, allowsDuplicates) {
 				calendar.fullCalendar('removeEvents', event.id || event._id);
 			}
 		});
-
-		$.getJSON('course_names.json', function(coursenames) {
-			function split( val ) {
-				return val.split( /,\s*/ );
-			}
-			function extractLast( term ) {
-				return split( term ).pop();
-			}
 		
-			$( "#courseids" )
-				// don't navigate away from the field on tab when selecting an item
-				.bind( "keydown", function( event ) {
-					if ( event.keyCode === $.ui.keyCode.TAB &&
-						$( this ).data( "ui-autocomplete" ).menu.active ) {
-						event.preventDefault();
-					}
-				})
-				.autocomplete({
-					minLength: 0,
-					source: function( request, response ) {
-					// delegate back to autocomplete, but extract the last term
-					response( $.ui.autocomplete.filter(
-					coursenames, extractLast( request.term ) ) );
-					},
-					focus: function(event, ui) {
-						// prevent value inserted on focus
-						$('#courseids').val($('#courseids').val() + ui.item.id);
-						return false;
-					},
-					select: function( event, ui ) {
-							var terms = split( this.value );
-							// remove the current input
-							terms.pop();
-							// add the selected item
-							terms.push( ui.item.value );
-							// add placeholder to get the comma-and-space at the end
-							terms.push( "" );
-							this.value = terms.join( ", " );
-							return false;
+		$('#term').change(function(ev) {
+			$.getJSON($(this).find(':selected').attr('name')+'.json', function(coursenames) {
+				
+				function split( val ) {
+					return val.split( /,\s*/ );
+				}
+				function extractLast( term ) {
+					return split( term ).pop();
+				}
+			
+				$( "#courseids" )
+					// don't navigate away from the field on tab when selecting an item
+					.bind( "keydown", function( event ) {
+						if ( event.keyCode === $.ui.keyCode.TAB &&
+							$( this ).data( "ui-autocomplete" ).menu.active ) {
+							event.preventDefault();
 						}
-				})
-				.data( "ui-autocomplete" )._renderItem = function( ul, item ) {
-					return $( "<li>" )
-						.append( "<a>" + item.id + "<br>" + item.name + "</a>" )
-						.appendTo( ul );
-				};	
-		});
+						else if (event.keyCode === $.ui.keyCode.ENTER && !$( this ).data( "ui-autocomplete" ).menu.active) {
+							$('#submit').click();
+						}
+					})
+					.autocomplete({
+						minLength: 0,
+						source: function( request, response ) {
+							response( $.ui.autocomplete.filter(
+							coursenames, extractLast( request.term ) ) );
+						},
+						focus: function(event, ui) {
+							// prevent value inserted on focus
+							return false;
+						},
+						select: function( event, ui ) {
+								var terms = split( this.value );
+								// remove the current input
+								terms.pop();
+								// add the selected item
+								terms.push( ui.item.value );
+								// add placeholder to get the comma-and-space at the end
+								terms.push( "" );
+								this.value = terms.join( ", " );
+								return false;
+							}
+					})
+					.data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+						return $( "<li>" )
+							.append( "<a><span class=\"title\">" + item.value + "</span><br /><span class=\"subtitle\">" + item.name + "</span></a>" )
+							.appendTo( ul );
+					};	
+			});
+		}).change();
 	});
 })(jQuery, this);
