@@ -160,7 +160,8 @@ function array_pairs(arr, allowsDuplicates) {
 		
 		calendar.html('').fullCalendar({
 			events: function(start, end, callback) {
-				var events = [], index = $('#slider').slider("value");
+				var events = [], index = $('#slider').slider("value"), list = $('#courses-list');
+				list.html('');
 				$.each(validSectionCombinations[index], function(i, section) {
 					var url = ['http:\/\/www.columbia.edu\/cu\/bulletin\/uwb\/subj\/', section['Course'].replace(/([A-Z]{4})([0-9]{4})([A-Z])([0-9]{3})/, "$1/$3$2-"+section['Term']+"-$4")].join('');
 					$.each([1,2,3,4,5,6], function(i, num) {
@@ -180,6 +181,7 @@ function array_pairs(arr, allowsDuplicates) {
 							});
 						});
 					});
+					list.append(['<li><a href="', url, '" target="_blank">', section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')</a></li>'].join(''));
 				});
 				$.each(busyTimes, function(i, busyTimeArray) {
 					var startTimeString = busyTimeArray[1],
