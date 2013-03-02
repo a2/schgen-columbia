@@ -79,7 +79,8 @@ function array_pairs(arr, allowsDuplicates) {
 	var validSectionCombinations = [],
 		busyTimes = [],
 		pairs1to6 = array_pairs('123456', true),
-		columbiaDays = "UMTWRFS";
+		columbiaDays = "UMTWRFS",
+		desiredSectionsForClasses = {};
 	
 	function minutesSinceWeekStart(day, time) {
 		var date = new Date("Mar 15, 1994 " + time);
@@ -116,9 +117,28 @@ function array_pairs(arr, allowsDuplicates) {
 			return event.url ? null : [[columbiaDays[event.start.getDay()], bt_timeString(event.start), bt_timeString(event.end)]];
 		});
 		
+		console.log(desiredSectionsForClasses);
+		
 		var newClasses = []
 		$.each(classes, function(i, aClass) {
 			var validSections = $.grep(aClass, function(section, i) {
+				var regex = section['Course'].match(/([A-Za-z ]+[0-9 ]+)[A-Za-z]+([0-9]+)/),
+					courseId = regex[1],
+					sectionId = parseInt(regex[2]),
+					desiredSections = desiredSectionsForClasses[courseId],
+					rejectedSections = desiredSectionsForClasses['!'+courseId];
+				
+				if (!!desiredSections && desiredSections.indexOf(sectionId) == -1)
+				{
+					console.log('Rejecting section #'+sectionId);
+					return false;
+				}
+				else if (!!rejectedSections && rejectedSections.indexOf(sectionId) != -1)
+				{
+					console.log('Rejecting section #'+sectionId);
+					return false;
+				}
+				
 				var doesConflict = false;
 				
 				$.each(busyTimes, function(i, busyTimeArray) {
@@ -135,6 +155,13 @@ function array_pairs(arr, allowsDuplicates) {
 			newClasses.push(validSections);
 		});
 		classes = newClasses;
+		
+		$.each(classes, function(i, sections) {
+			if (!sections.length) {
+				$("#no-permutations-modal").dialog('open');
+				return false;
+			}
+		});
 		
 		var sectionCombinations = array_combinations(classes);
 		validSectionCombinations = [];
@@ -158,11 +185,19 @@ function array_pairs(arr, allowsDuplicates) {
 				validSectionCombinations.push(sections);
 		});
 		
-		$('#slider')
+		var slider = $('#slider')
 			.slider('option', 'max', validSectionCombinations.length - 1)
-			.slider('option', 'value', 0)
-			.add("#courses-list")
-				.show();
+			.slider('option', 'value', 0),
+			
+			explanation = slider.add("#slider-explanation");
+			
+		if (validSectionCombinations.length > 1)
+			explanation.show()
+		else
+			explanation.hide();
+			
+		$("#courses-list")
+			.show();
 		
 		$('#calendar').fullCalendar('refetchEvents');
 	}
@@ -171,18 +206,44 @@ function array_pairs(arr, allowsDuplicates) {
 	$(function() {
 		$('#submit').click(function(ev) {
 			var term = $('#term :selected').attr('name'),
-				courseids = $('#courseids').val().split(', '),
+				courseids = $('#courseids').val().split(/,\s*/),
 				jxhr = [],
 				result = [];
-			if (!courseids.length || (courseids.length == 1 || courseids[0] == "")) return;
+			
+			sliderValue = 0;
+			desiredSectionsForClasses = {};
+			
+			if (!courseids.length || (courseids.length == 1 && courseids[0] == ""))
+			{
+				validSectionCombinations = [];
+				busyTimes = [];
+				$('#calendar').fullCalendar('refetchEvents');
+			}
+			
+			sliderValue = 0;
+			desiredSectionsForClasses = {};
+
 			$.each(courseids, function(i, val) {
 				if (!val || !val.length)
 					return;
-					
+				
+				var results = val.match(/([A-Za-z ]+[0-9 ]+)(?:{(.*?)})?/),
+					courseid = results[1];
+				
+				if (results[2] != undefined)
+				{
+					var sections = [],
+						shouldExclude = results[2].indexOf('!') == 0;
+						
+					$.each(results[2].slice(!!shouldExclude).split(/,\s*/), function(i, val) {
+						sections.push(parseInt(val));
+					});
+					desiredSectionsForClasses[(shouldExclude?'!':'')+courseid.toUpperCase()] = sections;
+				}
+				
 				jxhr.push(
-					$.getJSON('http://data.adicu.com/courses?api_token='+API_TOKEN+'&term='+term+'&courseid='+val+'&jsonp=?', function(data) {
-						data = data['data'];
-						result.push(data);
+					$.getJSON('http://data.adicu.com/courses?api_token='+API_TOKEN+'&term='+term+'&courseid='+courseid+'&jsonp=?', function(data) {
+						result.push(data['data']);
 					})
 				);
 			});
@@ -196,23 +257,26 @@ function array_pairs(arr, allowsDuplicates) {
 			autoOpen: false
 		});
 		
-		var calendar = $("#calendar");
+		var calendar = $("#calendar"),
+			
+			sliderValue = 0;
 		
 		$("#slider").slider({
 			value:0,
 			min: 0,
 			slide: function(event, ui) {
+				sliderValue = ui["value"];
 				calendar.fullCalendar('refetchEvents');
 			}
 		});
 		
 		calendar.fullCalendar({
 			events: function(start, end, callback) {
-				var events = [], index = $('#slider').slider("value"), list = $('#courses-list');
+				var events = [], list = $('#courses-list');
 				list.html('');
 				if (validSectionCombinations.length) {
-					$.each(validSectionCombinations[index], function(i, section) {
-						var url = ['http:\/\/www.columbia.edu\/cu\/bulletin\/uwb\/subj\/', section['Course'].replace(/([A-Z]{4})([0-9]{4})([A-Z])([0-9]{3})/, "$1/$3$2-"+section['Term']+"-$4")].join('');
+					$.each(validSectionCombinations[sliderValue], function(i, section) {
+						var url = ['http:\/\/www.columbia.edu\/cu\/bulletin\/uwb\/subj\/', section['Course'].replace(/([A-Za-z ]+)([0-9 ]+)([A-Za-z]+)([0-9]+)/, "$1/$3$2-"+section['Term']+"-$4")].join('');
 						$.each([1,2,3,4,5,6], function(i, num) {
 							if (!section[meetsOn+num]) return;
 							$.each(section[meetsOn+num].split(''), function(i, day) {
@@ -262,14 +326,14 @@ function array_pairs(arr, allowsDuplicates) {
 			month: 2,
 			date: 3,
 			minTime: '8:00am',
-			maxTime: '8:00pm',
-			contentHeight: 600,
+			maxTime: '10:00pm',
 			allDayDefault: false,
 			editable: true,
 			selectable: true,
 			selectHelper: true,
 			eventBackgroundColor: '#7F2425',
 			eventBorderColor: 'black',
+			contentHeight: 1000,
 			select: function(start, end, allDay) {
 				calendar.fullCalendar('renderEvent',
 					{
@@ -308,8 +372,9 @@ function array_pairs(arr, allowsDuplicates) {
 							$( this ).data( "ui-autocomplete" ).menu.active ) {
 							event.preventDefault();
 						}
-						else if (event.keyCode === $.ui.keyCode.ENTER && !$( this ).data( "ui-autocomplete" ).menu.active) {
+						else if (event.keyCode === $.ui.keyCode.ENTER /* && !$( this ).data( "ui-autocomplete" ).menu.active */) {
 							$('#submit').click();
+							event.preventDefault()
 						}
 					})
 					.autocomplete({
