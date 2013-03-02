@@ -318,8 +318,6 @@ function array_pairs(arr, allowsDuplicates) {
 						return false;
 					},
 					select: function( event, ui ) {
-							$('#course-id').val(ui.item.id);
-							$('#course-name').val(ui.item.name);
 							var terms = split( this.value );
 							// remove the current input
 							terms.pop();
