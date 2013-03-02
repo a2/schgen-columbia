@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from werkzeug.serving import run_simple
 
 app = Flask(__name__)
@@ -11,6 +11,10 @@ def index():
 @app.route('/schgen/')
 def schgen():
     return 'Hello World!'
+
+@app.route('/schgen/courses.json')
+def courses():
+	return jsonify({"a": 1, "b": 2, "c": 3})
 
 if __name__ == '__main__':
     run_simple('0.0.0.0', 5001, app,
