@@ -5,7 +5,11 @@ app = Flask(__name__)
 app.debug = True
 
 @app.route('/')
-def hello_world():
+def index():
+    return 'Index Page'
+
+@app.route('/schgen/')
+def schgen():
     return 'Hello World!'
 
 if __name__ == '__main__':
