@@ -9,3 +9,9 @@ pre, code {
 #slider, #courses-list {
 	display: none;
 }
+
+html .ui-autocomplete {
+	max-height: 100px;
+	overflow-y:auto;
+	overflow-x:hidden;
+}

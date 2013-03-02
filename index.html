@@ -15,16 +15,19 @@
 </head>
 <body>
 	<p><label for="term">Term:</label> <input type="text" id="term" value="spring2013" /></p>
-	<p><label for="courseids">Course IDs:</textarea><br /><textarea id="courseids">MATH1101
-MATH1102
-MATH1201
-MATH1202</textarea></p>
-
+	<p>
+		<label for="courseids" size="50">Course IDs:</label><br /><input id="courseids" />
+		<input type="hidden" id="course-id" />
+		<input id="course-name" />
+	</p>
+	
 	<div id="slider"></div>
 	<div id="calendar"></div>
 	<ul id="courses-list"></ul>
 	
 	<div id="no-permutations-modal" title="No Schedules Possible">
+		<div id="slider"></div>
+		<div id="calendar"></div>
 		<p>No schedules are possible with the current configuration. Try clicking on unavailable time slots to remove them.</p>
 	</div>
 	

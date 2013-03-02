@@ -171,10 +171,13 @@ function array_pairs(arr, allowsDuplicates) {
 	$(function() {
 		$('#submit').click(function(ev) {
 			var term = $('#term').val(),
-				courseids = $('#courseids').val().split('\n'),
+				courseids = $('#courseids').val().split(', '),
 				jxhr = [],
 				result = [];
 			$.each(courseids, function(i, val) {
+				if (!val || !val.length)
+					return;
+					
 				jxhr.push(
 					$.getJSON('http://data.adicu.com/courses?api_token='+API_TOKEN+'&term='+term+'&courseid='+val+'&jsonp=?', function(data) {
 						data = data['data'];
@@ -284,6 +287,55 @@ function array_pairs(arr, allowsDuplicates) {
 				
 				calendar.fullCalendar('removeEvents', event.id || event._id);
 			}
+		});
+
+		$.getJSON('course_names.json', function(coursenames) {
+			function split( val ) {
+				return val.split( /,\s*/ );
+			}
+			function extractLast( term ) {
+				return split( term ).pop();
+			}
+		
+			$( "#courseids" )
+				// don't navigate away from the field on tab when selecting an item
+				.bind( "keydown", function( event ) {
+					if ( event.keyCode === $.ui.keyCode.TAB &&
+						$( this ).data( "ui-autocomplete" ).menu.active ) {
+						event.preventDefault();
+					}
+				})
+				.autocomplete({
+					minLength: 0,
+					source: function( request, response ) {
+					// delegate back to autocomplete, but extract the last term
+					response( $.ui.autocomplete.filter(
+					coursenames, extractLast( request.term ) ) );
+					},
+					focus: function(event, ui) {
+						// prevent value inserted on focus
+						$('#courseids').val($('#courseids').val() + ui.item.id);
+						return false;
+					},
+					select: function( event, ui ) {
+							$('#course-id').val(ui.item.id);
+							$('#course-name').val(ui.item.name);
+							var terms = split( this.value );
+							// remove the current input
+							terms.pop();
+							// add the selected item
+							terms.push( ui.item.value );
+							// add placeholder to get the comma-and-space at the end
+							terms.push( "" );
+							this.value = terms.join( ", " );
+							return false;
+						}
+				})
+				.data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+					return $( "<li>" )
+						.append( "<a>" + item.id + "<br>" + item.name + "</a>" )
+						.appendTo( ul );
+				};	
 		});
 	});
 })(jQuery, this);
