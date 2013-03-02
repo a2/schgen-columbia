@@ -229,7 +229,7 @@ function array_pairs(arr, allowsDuplicates) {
 	$(function() {
 		$('#submit').click(function(ev) {
 			var term = $('#term').val(),
-			courseids = $('#courseids').val().split('\n'),
+			courseids = $('#courseids').val().split(','),
 			jxhr = [],
 			result = [];
 		$.each(courseids, function(i, val) {
