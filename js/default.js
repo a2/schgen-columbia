@@ -229,7 +229,8 @@ function array_pairs(arr, allowsDuplicates) {
 	$(function() {
 		$('#submit').click(function(ev) {
 			var term = $('#term').val(),
-			courseids = $('#courseids').val().split(','),
+			courseids = $('#courseids').val().split(',').slice(0, -1);
+			console.log(courseids);
 			jxhr = [],
 			result = [];
 		$.each(courseids, function(i, val) {
@@ -246,18 +247,8 @@ function array_pairs(arr, allowsDuplicates) {
 		});
 
 
-		var courseids = [
-			{
-				id :'S1010',
-				value :'S1010',
-				   name: 'UNIVERSITY WRITING',
-			},
-			{
-				id :'S1011',
-				value :'S1011',
-				   name: 'NONUNIVERSITY WRITING',
-			}
-		];
+	$.getJSON('course_names.json', function(coursenames) {
+
 	function split( val ) {
 		return val.split( /,\s*/ );
 	}
@@ -278,7 +269,7 @@ function array_pairs(arr, allowsDuplicates) {
 		source: function( request, response ) {
 		// delegate back to autocomplete, but extract the last term
 		response( $.ui.autocomplete.filter(
-		courseids, extractLast( request.term ) ) );
+		coursenames, extractLast( request.term ) ) );
 		},
 		focus: function(event, ui) {
 			// prevent value inserted on focus
@@ -304,6 +295,8 @@ function array_pairs(arr, allowsDuplicates) {
 			.append( "<a>" + item.id + "<br>" + item.name + "</a>" )
 			.appendTo( ul );
 	};
+
+	});
 
 	});
 
