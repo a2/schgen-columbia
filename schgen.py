@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
+from flask import request as frequest
 from werkzeug.serving import run_simple
+import requests
 
 app = Flask(__name__)
 app.debug = True
@@ -14,7 +16,8 @@ def schgen():
 
 @app.route('/schgen/courses.json')
 def courses():
-	return jsonify({"a": 1, "b": 2, "c": 3})
+	return frequest.args
+	# return jsonify({"a": 1, "b": 2, "c": 3})
 
 if __name__ == '__main__':
     run_simple('0.0.0.0', 5001, app,
