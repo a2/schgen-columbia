@@ -10,9 +10,10 @@ c = set((
     if i['Term'] == '20131')
 
 
-d = [{
-    'name' : i[1],
-    'id':i[0],
-    'value': i[0]}
-    for i in c]
+d = [
+        {'name' : i[1], 'value': i[0]}
+        for i in c
+    ]
+
+d = sorted(d, key = lambda x: x['value'])
 json.dump(d, open('spring2103.json', 'w'))
