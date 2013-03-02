@@ -170,7 +170,7 @@ function array_pairs(arr, allowsDuplicates) {
 	var API_TOKEN = '51314d99a237900002959a87';
 	$(function() {
 		$('#submit').click(function(ev) {
-			var term = $('#term').val(),
+			var term = $('#term :selected').attr('name'),
 				courseids = $('#courseids').val().split(', '),
 				jxhr = [],
 				result = [];
