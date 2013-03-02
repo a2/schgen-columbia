@@ -2,17 +2,30 @@
 <html>
 <head>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.css" />
 	<link rel="stylesheet" href="css/default.css" />
 	
 	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
+	<script src="http://cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.js"></script>
 	<script src="js/default.js"></script>
 </head>
 <body>
-	<input type="text" id="term" value="spring2013" />
-	<input type="text" id="courseids" value="COMS1004,ENGL1010" />
-	<input type="submit" id="submit" value="Fetch Courses" />
+	<p><label for="term">Term:</label> <input type="text" id="term" value="spring2013" /></p>
+	<p><label for="courseids">Course IDs:</textarea><br /><textarea id="courseids">MATH1101
+MATH1102
+MATH1201
+MATH1202</textarea></p>
+	<p><label for="busy-times">Unavailable Times:</textarea><br /><textarea id="busy-times">M 10:00 12:00
+T 11:00 13:00
+W 12:00 14:00
+R 13:00 15:00
+F 09:00 17:00</textarea></p>
+	<p><input type="submit" id="submit" value="$ ./schgen" /></p>
 	
-	<code id="result"></code>
+	<div id="results">
+		<div id="slider"></div>
+		<div id="calendar"></div>
+	</div>
 </body>
 </html>

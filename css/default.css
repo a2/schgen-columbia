@@ -1,3 +1,7 @@
 pre, code {
 	white-space: pre;
 }
+
+#results {
+	display: none;
+}
