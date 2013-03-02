@@ -126,7 +126,7 @@ function array_pairs(arr, allowsDuplicates) {
 					courseId = regex[1],
 					sectionId = parseInt(regex[2]),
 					desiredSections = desiredSectionsForClasses[courseId],
-					rejectedSections = desiredSectionsForClasses['!'+courseId];
+					rejectedSections = desiredSectionsForClasses['^'+courseId];
 				
 				if (!!desiredSections && desiredSections.indexOf(sectionId) == -1)
 				{
@@ -233,12 +233,12 @@ function array_pairs(arr, allowsDuplicates) {
 				if (results[2] != undefined)
 				{
 					var sections = [],
-						shouldExclude = results[2].indexOf('!') == 0;
+						shouldExclude = results[2].indexOf('^') == 0;
 						
-					$.each(results[2].slice(!!shouldExclude).split(/,\s*/), function(i, val) {
+					$.each(results[2].slice(!!shouldExclude).split(/\s*|\s*/), function(i, val) {
 						sections.push(parseInt(val));
 					});
-					desiredSectionsForClasses[(shouldExclude?'!':'')+courseid.toUpperCase()] = sections;
+					desiredSectionsForClasses[(shouldExclude?'^':'')+courseid.toUpperCase()] = sections;
 				}
 				
 				jxhr.push(
