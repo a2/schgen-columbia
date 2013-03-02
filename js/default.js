@@ -275,28 +275,27 @@ function array_pairs(arr, allowsDuplicates) {
 		})
 	.autocomplete({
 		minLength: 0,
-		source: courseids,
-		//function( request, response ) {
+		source: function( request, response ) {
 		// delegate back to autocomplete, but extract the last term
-		//response( $.ui.autocomplete.filter(
-		//courseids, extractLast( request.term ) ) );
-		//},
+		response( $.ui.autocomplete.filter(
+		courseids, extractLast( request.term ) ) );
+		},
 		focus: function(event, ui) {
 			// prevent value inserted on focus
-			$('#courseids').val(ui.item.id);
+			$('#courseids').val($('#courseids').val() + ui.item.id);
 			return false;
 		},
 		select: function( event, ui ) {
 				$('#course-id').val(ui.item.id);
 				$('#course-name').val(ui.item.name);
-				//var terms = split( this.value );
+				var terms = split( this.value );
 				// remove the current input
-				//terms.pop();
-				//// add the selected item
-				//terms.push( ui.item.value );
-				//// add placeholder to get the comma-and-space at the end
-				//terms.push( "" );
-				//this.value = terms.join( ", " );
+				terms.pop();
+				// add the selected item
+				terms.push( ui.item.value );
+				// add placeholder to get the comma-and-space at the end
+				terms.push( "" );
+				this.value = terms.join( ", " );
 				return false;
 			}
 	})
