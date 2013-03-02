@@ -176,7 +176,7 @@ function array_pairs(arr, allowsDuplicates) {
 								start: new Date(2013, 2, 3+columbiaDays.indexOf(day), startTimeHours, startTimeMinutes),
 								end: new Date(2013, 2, 3+columbiaDays.indexOf(day), endTimeHours, endTimeMinutes),
 								url: url,
-								title: [section['CourseTitle'], ' (§', section['Course'].slice(-3), ') (', section['CallNumber'], ')'].join('')
+								title: [section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')'].join('')
 							});
 						});
 					});
