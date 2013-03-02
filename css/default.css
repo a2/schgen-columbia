@@ -2,6 +2,10 @@ pre, code {
 	white-space: pre;
 }
 
-#results {
+#slider {
+	margin-bottom: 1em;
+}
+
+#slider, #courses-list {
 	display: none;
 }

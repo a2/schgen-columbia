@@ -2,12 +2,15 @@
 <html>
 <head>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
-	<link rel="stylesheet" href="//cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.css" />
+	<link rel="stylesheet" href="http://cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.css" />
+	<link rel="stylesheet" href="css/jquery.ui.timepicker.min.css" />
+	<link rel="stylesheet" href="css/normalize.min.css" />
 	<link rel="stylesheet" href="css/default.css" />
 	
 	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
 	<script src="http://cdn.jsdelivr.net/fullcalendar/1.5.4/fullcalendar.js"></script>
+	<script src="js/jquery.ui.timepicker.min.js"></script>
 	<script src="js/default.js"></script>
 </head>
 <body>
@@ -16,18 +19,15 @@
 MATH1102
 MATH1201
 MATH1202</textarea></p>
-	<p><label for="busy-times">Unavailable Times:</textarea><br /><textarea id="busy-times">M 10:00 12:00
-T 11:00 13:00
-W 12:00 14:00
-R 13:00 15:00
-F 09:00 17:00</textarea></p>
-	<p><input type="submit" id="submit" value="$ ./schgen" /></p>
+
+	<div id="slider"></div>
+	<div id="calendar"></div>
+	<ul id="courses-list"></ul>
 	
-	<div id="results">
-		<div id="slider"></div>
-		<br />
-		<div id="calendar"></div>
-		<ul id="courses-list"></ul>
+	<div id="no-permutations-modal" title="No Schedules Possible">
+		<p>No schedules are possible with the current configuration. Try clicking on unavailable time slots to remove them.</p>
 	</div>
+	
+	<p><input type="submit" id="submit" value="$ ./schgen" /></p>
 </body>
 </html>

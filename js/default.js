@@ -49,6 +49,22 @@ function array_combinations(array) {
 	}, [[]]);
 }
 
+// http://jsfromhell.com/string/pad
+//
+// String.pad(length: Integer, [substring: String = " "], [type: Integer = 0]): String
+// Returns the string with a substring padded on the left, right or both sides.
+//
+// length: amount of characters that the string must have
+// substring: string that will be concatenated
+// type: specifies the side where the concatenation will happen, where:
+//           0 = left, 1 = right and 2 = both sides
+
+String.prototype.pad = function(l, s, t){
+    return s || (s = " "), (l -= this.length) > 0 ? (s = new Array(Math.ceil(l / s.length)
+        + 1).join(s)).substr(0, t = !t ? l : t == 1 ? 0 : Math.ceil(l / 2))
+        + this + s.substr(0, l - t) : this;
+};
+
 function array_pairs(arr, allowsDuplicates) {
 	var pairs = [];
 	for (var i = 0; i <= arr.length - 2; ++i) {
@@ -60,7 +76,9 @@ function array_pairs(arr, allowsDuplicates) {
 }
 
 ;(function ($, window, undefined) {
-	var pairs1to6 = array_pairs('123456', true),
+	var validSectionCombinations = [],
+		busyTimes = [],
+		pairs1to6 = array_pairs('123456', true),
 		columbiaDays = "UMTWRFS";
 	
 	function minutesSinceWeekStart(day, time) {
@@ -87,8 +105,15 @@ function array_pairs(arr, allowsDuplicates) {
 	var meetsOn = 'MeetsOn', startTime = 'StartTime', endTime = 'EndTime';
 	
 	function parseArrayOfClassSections(classes) {
-		var busyTimes = $.map($('#busy-times').text().split('\n'), function(val, i) {
-			return [val.split(' ')];
+		function bt_pad(num) {
+			return num.toString().pad(2, "0");
+		}
+		function bt_timeString(date) {
+			return bt_pad(date.getHours()) + ":" + bt_pad(date.getMinutes());
+		}
+		
+		busyTimes = $.map($('#calendar').fullCalendar('clientEvents'), function(event, i) {
+			return event.url ? null : [[columbiaDays[event.start.getDay()], bt_timeString(event.start), bt_timeString(event.end)]];
 		});
 		
 		var newClasses = []
@@ -111,8 +136,8 @@ function array_pairs(arr, allowsDuplicates) {
 		});
 		classes = newClasses;
 		
-		var sectionCombinations = array_combinations(classes),
-			validSectionCombinations = [];
+		var sectionCombinations = array_combinations(classes);
+		validSectionCombinations = [];
 		$.each(sectionCombinations, function(i, sections) {
 			var pairs = array_pairs(sections, false);
 			
@@ -133,98 +158,13 @@ function array_pairs(arr, allowsDuplicates) {
 				validSectionCombinations.push(sections);
 		});
 		
-		$('#results').show();
+		$('#slider')
+			.slider('option', 'max', validSectionCombinations.length - 1)
+			.slider('option', 'value', 0)
+			.add("#courses-list")
+				.show();
 		
-		$("#slider").slider({
-			value:0,
-			min: 0,
-			max: validSectionCombinations.length - 1,
-			slide: function(event, ui) {
-				calendar.fullCalendar('refetchEvents');
-			}
-		});
-		$( "#amount" ).val( "$" + $( "#slider" ).slider( "value" ) );
-		
-		
-		var permutations = $('#permutations');
-		permutations.html('');
-		for (var i = 1; i <= validSectionCombinations.length; ++i) {
-			permutations.append('<option value="p'+i+'">Permutation '+i+'</option>');
-		}
-		
-		var calendar = $('#calendar');
-		
-		permutations.unbind().change(function(ev) {
-			calendar.fullCalendar('refetchEvents');
-		}).change();
-		
-		calendar.html('').fullCalendar({
-			events: function(start, end, callback) {
-				var events = [], index = $('#slider').slider("value"), list = $('#courses-list');
-				list.html('');
-				$.each(validSectionCombinations[index], function(i, section) {
-					var url = ['http:\/\/www.columbia.edu\/cu\/bulletin\/uwb\/subj\/', section['Course'].replace(/([A-Z]{4})([0-9]{4})([A-Z])([0-9]{3})/, "$1/$3$2-"+section['Term']+"-$4")].join('');
-					$.each([1,2,3,4,5,6], function(i, num) {
-						if (!section[meetsOn+num]) return;
-						$.each(section[meetsOn+num].split(''), function(i, day) {
-							var startTimeString = section[startTime+num],
-								startTimeHours = parseInt(startTimeString.slice(0,2)),
-								startTimeMinutes = parseInt(startTimeString.slice(3,5)),
-								endTimeString = section[endTime+num],
-								endTimeHours = parseInt(endTimeString.slice(0,2)),
-								endTimeMinutes = parseInt(endTimeString.slice(3,5));
-							events.push({
-								start: new Date(2013, 2, 3+columbiaDays.indexOf(day), startTimeHours, startTimeMinutes),
-								end: new Date(2013, 2, 3+columbiaDays.indexOf(day), endTimeHours, endTimeMinutes),
-								url: url,
-								title: [section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')'].join('')
-							});
-						});
-					});
-					list.append(['<li><a href="', url, '" target="_blank">', section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')</a></li>'].join(''));
-				});
-				$.each(busyTimes, function(i, busyTimeArray) {
-					var startTimeString = busyTimeArray[1],
-						startTimeHours = parseInt(startTimeString.slice(0,2)),
-						startTimeMinutes = parseInt(startTimeString.slice(3,5)),
-						endTimeString = busyTimeArray[2],
-						endTimeHours = parseInt(endTimeString.slice(0,2)),
-						endTimeMinutes = parseInt(endTimeString.slice(3,5));
-					events.push({
-						start: new Date(2013, 2, 3+columbiaDays.indexOf(busyTimeArray[0]), startTimeHours, startTimeMinutes),
-						end: new Date(2013, 2, 3+columbiaDays.indexOf(busyTimeArray[0]), endTimeHours, endTimeMinutes),
-						title: "Unavailable",
-						backgroundColor: 'red'
-					});
-				});
-				callback(events);
-			},
-			defaultView: 'agendaWeek',
-			header: null,
-			columnFormat: { agendaWeek: 'ddd' },
-			allDaySlot: false,
-			year: 2013,
-			month: 2,
-			date: 3,
-			minTime: '8:00am',
-			maxTime: '8:00pm',
-			contentHeight: 600,
-			allDayDefault: false
-		});
-		
-/*
-		$('#results').html(function() {
-			var result = ''
-			$.each(validSectionCombinations, function(i, sections) {
-				result += '<h3>Permutation '+(i+1)+'</h3><ul>';
-				$.each(sections, function(i, section) {
-					result += ['<li><a href="http:\/\/www.columbia.edu\/cu\/bulletin\/uwb\/subj\/', section['Course'].replace(/([A-Z]{4})([0-9]{4})([A-Z])([0-9]{3})/, "$1/$3$2-"+section['Term']+"-$4"), '" target="_blank">', section['CourseTitle'], ' (&sect;', section['Course'].slice(-3), ') (', section['CallNumber'], ')', '</a></li>'].join('');
-				});
-				result += '</ul>';
-			});
-			return result;
-		});
-*/
+		$('#calendar').fullCalendar('refetchEvents');
 	}
 	
 	var API_TOKEN = '51314d99a237900002959a87';
@@ -245,6 +185,105 @@ function array_pairs(arr, allowsDuplicates) {
 			$.when.apply($, jxhr).done(function() {
 				parseArrayOfClassSections(result);
 			});
+		});
+		
+		$("#no-permutations-modal").dialog({
+			modal: true,
+			autoOpen: false
+		});
+		
+		var calendar = $("#calendar");
+		
+		$("#slider").slider({
+			value:0,
+			min: 0,
+			slide: function(event, ui) {
+				calendar.fullCalendar('refetchEvents');
+			}
+		});
+		
+		calendar.fullCalendar({
+			events: function(start, end, callback) {
+				var events = [], index = $('#slider').slider("value"), list = $('#courses-list');
+				list.html('');
+				if (validSectionCombinations.length) {
+					$.each(validSectionCombinations[index], function(i, section) {
+						var url = ['http:\/\/www.columbia.edu\/cu\/bulletin\/uwb\/subj\/', section['Course'].replace(/([A-Z]{4})([0-9]{4})([A-Z])([0-9]{3})/, "$1/$3$2-"+section['Term']+"-$4")].join('');
+						$.each([1,2,3,4,5,6], function(i, num) {
+							if (!section[meetsOn+num]) return;
+							$.each(section[meetsOn+num].split(''), function(i, day) {
+								var startTimeString = section[startTime+num],
+									startTimeHours = parseInt(startTimeString.slice(0,2)),
+									startTimeMinutes = parseInt(startTimeString.slice(3,5)),
+									endTimeString = section[endTime+num],
+									endTimeHours = parseInt(endTimeString.slice(0,2)),
+									endTimeMinutes = parseInt(endTimeString.slice(3,5));
+								events.push({
+									start: new Date(2013, 2, 3+columbiaDays.indexOf(day), startTimeHours, startTimeMinutes),
+									end: new Date(2013, 2, 3+columbiaDays.indexOf(day), endTimeHours, endTimeMinutes),
+									url: url,
+									title: [section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')'].join(''),
+									backgroundColor: 'blue',
+									editable: false
+								});
+							});
+						});
+						list.append(['<li><a href="', url, '" target="_blank">', section['CourseTitle'], ' (\u00A7', section['Course'].slice(-3), ') (', section['CallNumber'], ')</a></li>'].join(''));
+					});
+				} else if (busyTimes.length) {
+					$("#no-permutations-modal").dialog('open');
+				}
+				if (busyTimes.length) {
+					$.each(busyTimes, function(i, busyTimeArray) {
+						var startTimeString = busyTimeArray[1],
+							startTimeHours = parseInt(startTimeString.slice(0,2)),
+							startTimeMinutes = parseInt(startTimeString.slice(3,5)),
+							endTimeString = busyTimeArray[2],
+							endTimeHours = parseInt(endTimeString.slice(0,2)),
+							endTimeMinutes = parseInt(endTimeString.slice(3,5));
+						events.push({
+							start: new Date(2013, 2, 3+columbiaDays.indexOf(busyTimeArray[0]), startTimeHours, startTimeMinutes),
+							end: new Date(2013, 2, 3+columbiaDays.indexOf(busyTimeArray[0]), endTimeHours, endTimeMinutes),
+							title: "Unavailable"
+						});
+					});
+				}
+				callback(events);
+			},
+			defaultView: 'agendaWeek',
+			header: null,
+			columnFormat: { agendaWeek: 'ddd' },
+			allDaySlot: false,
+			year: 2013,
+			month: 2,
+			date: 3,
+			minTime: '8:00am',
+			maxTime: '8:00pm',
+			contentHeight: 600,
+			allDayDefault: false,
+			editable: true,
+			selectable: true,
+			selectHelper: true,
+			eventBackgroundColor: 'red',
+			select: function(start, end, allDay) {
+				calendar.fullCalendar('renderEvent',
+					{
+						title: "Unavailable",
+						start: start,
+						end: end,
+						allDay: allDay
+					},
+					false
+				).fullCalendar('unselect');
+			},
+			eventClick: function(event) {
+				if (event.url) {
+					window.open(event.url);
+					return false;
+				}
+				
+				calendar.fullCalendar('removeEvents', event.id || event._id);
+			}
 		});
 	});
 })(jQuery, this);
